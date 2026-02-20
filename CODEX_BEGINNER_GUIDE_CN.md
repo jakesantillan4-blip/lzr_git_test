@@ -267,3 +267,159 @@
 
 - 如果你只是在对话里讨论、没有执行提交和推送，那它不会自动出现在 GitHub。
 - 只有进入了 Git 提交历史并被推送到远端仓库，才算“真正保存在 GitHub”。
+
+
+---
+
+## 13. 手把手：如何提交到 Git 仓库并推送到 GitHub
+
+下面给你一套可直接照抄的最小流程（新手版）：
+
+### 第 1 步：先看当前改动
+
+```bash
+git status
+```
+
+你会看到哪些文件被修改了（比如 `CODEX_BEGINNER_GUIDE_CN.md`）。
+
+### 第 2 步：把文件加入暂存区
+
+```bash
+git add CODEX_BEGINNER_GUIDE_CN.md
+```
+
+如果你有多个文件，也可以用：
+
+```bash
+git add .
+```
+
+### 第 3 步：创建一次提交（commit）
+
+```bash
+git commit -m "docs: update CodeX beginner guide"
+```
+
+这一步会把改动写入本地 Git 历史。
+
+### 第 4 步：确认你在正确分支
+
+```bash
+git branch --show-current
+```
+
+例如输出 `main` 或 `feature/codex-guide`。
+
+### 第 5 步：推送到 GitHub
+
+首次推送当前分支常用：
+
+```bash
+git push -u origin <你的分支名>
+```
+
+之后同一分支再次推送可用：
+
+```bash
+git push
+```
+
+### 第 6 步：在 GitHub 发起 PR（可选但推荐）
+
+- 打开仓库页面，通常会看到 “Compare & pull request”。
+- 填写标题和说明，提交 PR。
+- 合并后，这个文件就稳定保存在远端仓库历史中。
+
+---
+
+### 常见报错与处理（新手最常见）
+
+1. **`fatal: not a git repository`**  
+   说明你不在仓库目录，先 `cd` 到项目根目录再执行。
+
+2. **`remote origin already exists`**  
+   说明远端已配置过，不需要重复 `git remote add`。
+
+3. **推送被拒绝（non-fast-forward）**  
+   先拉取再推送：
+
+   ```bash
+   git pull --rebase origin <你的分支名>
+   git push
+   ```
+
+4. **需要登录/鉴权失败**  
+   说明你本机还没完成 GitHub 身份验证。常见方案是配置 SSH key 或使用 Personal Access Token。
+
+---
+
+## 14. 在当前 CodeX 界面下，怎么判断“能不能更新 GitHub 仓库文件”？
+
+你这个问题可以拆成两件事：
+
+1. **能不能在本地仓库改动并提交？**
+2. **能不能把提交推送到 GitHub 远端？**
+
+只要这两件事都通了，就可以更新 GitHub 仓库里的文件。
+
+### A. 先判断本地是否可改
+
+在 CodeX 里执行：
+
+```bash
+git status
+```
+
+- 能正常输出仓库状态，说明当前目录是 Git 仓库。
+- 之后你可以修改文件并执行 `git add`、`git commit`。
+
+### B. 再判断是否已连接 GitHub 远端
+
+```bash
+git remote -v
+```
+
+看是否有 `origin` 且地址是 GitHub 仓库（如 `github.com/...`）。
+
+如果没有远端，可以添加：
+
+```bash
+git remote add origin <你的GitHub仓库地址>
+```
+
+### C. 关键判断：是否有推送权限
+
+用一次“试推送”来验证：
+
+```bash
+git push -u origin <当前分支名>
+```
+
+- **成功**：说明这个 CodeX 环境下，你可以更新 GitHub 仓库文件。
+- **失败**：通常是权限/鉴权/分支保护策略问题，不是文档本身问题。
+
+### D. 常见失败原因（你一看就能定位）
+
+1. **权限不足（403 / permission denied）**  
+   账号没有该仓库写权限，或 Token/SSH key 权限不够。
+
+2. **未完成鉴权**  
+   当前环境没有配置好 GitHub 登录凭据（PAT 或 SSH key）。
+
+3. **分支保护（protected branch）**  
+   目标分支不允许直接 push，需要走 PR。
+
+4. **远端领先（non-fast-forward）**  
+   先同步后再推：
+
+   ```bash
+   git pull --rebase origin <当前分支名>
+   git push
+   ```
+
+### E. 最实用的一句话结论
+
+> 在 CodeX 界面下，是否能更新 GitHub 文件，不看“能不能聊天”，而看“能不能成功 push 到远端分支”。
+
+只要 `git push` 成功，GitHub 上的文件就会更新（或进入可合并的 PR 流程）。
